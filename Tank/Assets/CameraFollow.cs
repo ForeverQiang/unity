@@ -42,7 +42,6 @@ public class CameraFollow : MonoBehaviour {
         Camera.main.transform.LookAt(target.transform);
     }
 
-
     /// <summary>
     /// 中心点
     /// </summary>
@@ -55,12 +54,13 @@ public class CameraFollow : MonoBehaviour {
             this.target = target;
     }
 
-    public float rotSpeed = 0.2f;
-
-
     /// <summary>
     /// 横向旋转相机
     /// </summary>
+    /// 
+    //横向旋转速度
+    public float rotSpeed = 0.2f;
+
     void Rotate()
     {
         float w = Input.GetAxis("Mouse X") * rotSpeed;
@@ -70,9 +70,10 @@ public class CameraFollow : MonoBehaviour {
     /// <summary>
     /// 纵向旋转相机
     /// </summary>
+    //纵向角度范围
     private float maxRoll = 70f * Mathf.PI * 2 / 360;
     private float minRoll = -10f * Mathf.PI * 2 / 360;
-
+    //纵向旋转速度
     private float rollSpeed = 0.2f;
     void Roll()
     {
@@ -85,23 +86,21 @@ public class CameraFollow : MonoBehaviour {
             roll = minRoll;
     }
 
-
     /// <summary>
     ///调整距离
     /// </summary>
     public float maxDistance = 22f;
     public float minDistance = 5;
-
     public float zoomSpeed = 0.2f;
 
     void Zoom()
     {
-        if(Input.GetAxis("Mouse ScrollWheel") > 0 )
+        if(Input.GetAxis("Mouse ScrollWheel") > 0 )     //向上滚动
         {
             if (distance > minDistance)
                 distance -= zoomSpeed;
         }
-        else if(Input.GetAxis("Mouse ScrollWheel") < 0)
+        else if(Input.GetAxis("Mouse ScrollWheel") < 0)       //向上滚动
         {
             if (distance < maxDistance)
                 distance += zoomSpeed;
