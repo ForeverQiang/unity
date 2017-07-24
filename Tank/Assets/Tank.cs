@@ -5,6 +5,23 @@ using UnityEngine;
 public class Tank : MonoBehaviour
 {
 
+    //操纵类型
+    public enum CtrlType
+    {
+        none,
+        player,
+        computer
+    }
+    public CtrlType ctrlType = CtrlType.player;
+
+    //最大生命值
+    private float maxHp = 100;
+    //当前生命值
+    public float hp = 100;
+
+    //焚烧特效
+    public GameObject DestoryEffect;
+
     // Use this for initialization
     void Start()
     {
@@ -181,6 +198,10 @@ public class Tank : MonoBehaviour
     /// </summary>
     public void PlayerCtrl()
     {
+
+        //只有晚间操控的坦克才会生效
+        if (ctrlType != CtrlType.player)
+            return;
         //马力和转向角
         motor = MaxMotorTorque * Input.GetAxis("Vertical");
         steering = maxSteeringAngle * Input.GetAxis("Horizontal");
@@ -196,8 +217,17 @@ public class Tank : MonoBehaviour
             continue;
         }
         //炮塔炮管角度
-        turretRotTarget = Camera.main.transform.eulerAngles.y;
-        turretRollTarget = Camera.main.transform.eulerAngles.x;
+        //turretRotTarget = Camera.main.transform.eulerAngles.y;
+        //turretRollTarget = Camera.main.transform.eulerAngles.x;
+        TargetSignPos();
+
+        //发射炮弹
+        if (Input.GetMouseButton(0))
+            Shoot();
+        //炮塔炮管角度
+        //TargetSignPos();
+
+
     }
 
     //轮子
@@ -267,6 +297,85 @@ public class Tank : MonoBehaviour
         }
     }
 
+    //炮弹预设
+    public GameObject bullet;
+    //上次开炮时间
+    public float lastShootTime = 0;
+    //开炮的时间间隔
+    private float shootInterval = 0.5f;
+    /// <summary>
+    /// 发射炮弹
+    /// </summary>
+    public void Shoot()
+    {
+        //发射间隔
+        if (Time.time - lastShootTime < shootInterval)
+            return;
+        //子弹
+        if (bullet == null)
+            return;
+        //发射
+        Vector3 pos = gun.position + gun.forward * 5;
+        Instantiate(bullet, pos, gun.rotation);
+        lastShootTime = Time.time;
 
+
+     //   BeAttacked(30);
+    }
+
+
+    /// <summary>
+    /// 坦克受到攻击后的反应
+    /// </summary>
+    /// <param name="att"></param>
+    public void BeAttacked(float att)
+    {
+        //坦克已经被摧毁
+        if (hp <= 0)
+            return;
+        //击中处理 
+        if(hp>0)
+        {
+            hp -= att;
+        }
+        //被摧毁
+        if(hp <=0)
+        {
+            GameObject DestoryObj = (GameObject)Instantiate(DestoryEffect);
+            DestoryObj.transform.SetParent(transform, false);
+            DestoryObj.transform.localPosition = Vector3.zero;
+            ctrlType = CtrlType.none;
+        }
+    }
+
+    /// <summary>
+    /// 计算目标角度
+    /// </summary>
+    public void TargetSignPos()
+    {
+        //碰撞信息和碰撞点
+        Vector3 hitPoint = Vector3.zero;
+        RaycastHit raycaseHit;
+        //屏幕中心位置
+        Vector3 centerVec = new Vector3(Screen.width / 2, Screen.height / 2, 0);
+        Ray ray = Camera.main.ScreenPointToRay(centerVec);
+        //射线检测，获取hitPoint
+        if(Physics.Raycast(ray, out raycaseHit, 400.0f))
+        {
+            hitPoint = raycaseHit.point;
+        }
+        else
+        {
+            hitPoint = ray.GetPoint(400);
+        }
+        //计算目标角度
+        Vector3 dir = hitPoint - turret.position;
+        Quaternion angle = Quaternion.LookRotation(dir);
+        turretRotTarget = angle.eulerAngles.y;
+        turretRollTarget = angle.eulerAngles.x;
+        //调试用，稍后删除
+        Transform targetCube = GameObject.Find("TargetCube").transform;
+        targetCube.position = hitPoint;
+    }
 
 }
