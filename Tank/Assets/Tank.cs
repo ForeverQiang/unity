@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -22,6 +23,11 @@ public class Tank : MonoBehaviour
     //焚烧特效
     public GameObject DestoryEffect;
 
+    //发射炮弹音源
+    public AudioSource shootAudioSource;
+    //发射音效
+    public AudioClip shootClip;
+
     // Use this for initialization
     void Start()
     {
@@ -36,6 +42,9 @@ public class Tank : MonoBehaviour
         //马达音效
         motorAudioSource = gameObject.AddComponent<AudioSource>();
         motorAudioSource.spatialBlend = 1;
+        //发射音源
+        shootAudioSource = gameObject.AddComponent<AudioSource>();
+        shootAudioSource.spatialBlend = 1;
     }
 
     // Update is called once per frame
@@ -116,6 +125,8 @@ public class Tank : MonoBehaviour
         TurretRoll();
         //发送机音效
         MotorSound();
+
+    //    CalExplodePoint();
 
     }
 
@@ -316,9 +327,14 @@ public class Tank : MonoBehaviour
             return;
         //发射
         Vector3 pos = gun.position + gun.forward * 5;
-        Instantiate(bullet, pos, gun.rotation);
+        GameObject bulletObj = (GameObject)Instantiate(bullet, pos, gun.rotation);
+        Bullet bulletCmp = bulletObj.GetComponent<Bullet>();
+        if (bulletCmp != null)
+            bulletCmp.attackTank = this.gameObject;
+
         lastShootTime = Time.time;
 
+        shootAudioSource.PlayOneShot(shootClip);
 
      //   BeAttacked(30);
     }
@@ -328,7 +344,7 @@ public class Tank : MonoBehaviour
     /// 坦克受到攻击后的反应
     /// </summary>
     /// <param name="att"></param>
-    public void BeAttacked(float att)
+    public void BeAttacked(float att, GameObject attackTank)
     {
         //坦克已经被摧毁
         if (hp <= 0)
@@ -345,7 +361,15 @@ public class Tank : MonoBehaviour
             DestoryObj.transform.SetParent(transform, false);
             DestoryObj.transform.localPosition = Vector3.zero;
             ctrlType = CtrlType.none;
+            //显示击杀提示
+            if(attackTank != null)
+            {
+                Tank tankCmp = attackTank.GetComponent<Tank>();
+                if (tankCmp != null && tankCmp.ctrlType == CtrlType.player)
+                    tankCmp.StartDrawKill();
+            }
         }
+
     }
 
     /// <summary>
@@ -378,4 +402,102 @@ public class Tank : MonoBehaviour
         targetCube.position = hitPoint;
     }
 
+
+    /// <summary>
+    /// 计算爆炸位置
+    /// </summary>
+    /// <returns></returns>
+    public Vector3 CalExplodePoint()
+    {
+        //碰撞信息和碰撞点
+        Vector3 hitPoint = Vector3.zero;
+        RaycastHit hit;
+        //沿着炮管方向的射线
+        Vector3 pos = gun.position + gun.forward * 5;
+        Ray ray = new Ray(pos, gun.forward);
+        //射线检测
+        if(Physics.Raycast(ray,out hit, 400.0f))
+        {
+            hitPoint = hit.point;
+        }
+        else
+        {
+            hitPoint = ray.GetPoint(400);
+        }
+        //调试用
+        Transform explodeCube = GameObject.Find("ExplodeCube").transform;
+        //调试用结束
+        return hitPoint;
+    }
+
+    //准心
+    public Texture2D centerSight;
+    //坦克中心
+    public Texture2D tankSight;
+    /// <summary>
+    /// 绘制准心
+    /// </summary>
+    public void DrawSight()
+    {
+        //计算实际射击位置
+        Vector3 explodePoint = CalExplodePoint();
+        //获取“坦克准心”的屏幕坐标
+        Vector3 screenPoint = Camera.main.WorldToScreenPoint(explodePoint);
+        //绘制坦克准信
+        Rect tankRect = new Rect(screenPoint.x - tankSight.width / 2, Screen.height - screenPoint.y - tankSight.height / 2, tankSight.width, tankSight.height);
+        GUI.DrawTexture(tankRect, tankSight);
+        //绘制中心准心
+        Rect centerRect = new Rect(Screen.width / 2 - centerSight.width / 2, Screen.height / 2 - centerSight.height / 2, centerSight.width, centerSight.height);
+        GUI.DrawTexture(centerRect, centerSight);
+    }
+
+    void OnGUI()
+    {
+        if (ctrlType != CtrlType.player)
+            return;
+        DrawSight();
+        DrawHp();
+    }
+
+    //生命指示条素材
+    public Texture2D hpBarBg;
+    public Texture2D hpBar;
+    /// <summary>
+    /// 绘制生命条
+    /// </summary>
+    public void DrawHp()
+    {
+        //底框
+        Rect bgRect = new Rect(30, Screen.height - hpBarBg.height - 15, hpBarBg.width, hpBarBg.height);
+        GUI.DrawTexture(bgRect, hpBarBg);
+        //指示条
+        float width = hp * 102 / maxHp;
+        Rect hpRect = new Rect(bgRect.x + 29, bgRect.y + 9, width, hpBar.height);
+        GUI.DrawTexture(hpRect, hpBar);
+        //文字
+        string text = Mathf.Ceil(hp).ToString() + "/" + Mathf.Ceil(maxHp).ToString();
+        Rect textRect = new Rect(bgRect.x + 80, bgRect.y - 10, 50, 50);
+        GUI.Label(textRect, text);
+    }
+
+    //击杀提示图标
+    public Texture2D killUI;
+    //击杀图标开始显示的时间
+    private float killUIStartTime = float.MinValue;
+    /// <summary>
+    ///  //显示击杀图标
+    /// </summary>
+    public void StartDrawKill()
+    {
+        killUIStartTime = Time.time;
+    }
+
+    private void DrawKIllUI()
+    {
+        if (Time.time - killUIStartTime < 1f)
+        {
+            Rect rect = new Rect(Screen.width / 2 - killUI.width / 2, 30, killUI.width, killUI.height);
+            GUI.DrawTexture(rect, killUI);
+        }
+    }
 }
