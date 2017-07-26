@@ -27,7 +27,8 @@ public class Tank : MonoBehaviour
     public AudioSource shootAudioSource;
     //发射音效
     public AudioClip shootClip;
-
+    //人工智能
+    private AI ai;
     // Use this for initialization
     void Start()
     {
@@ -45,6 +46,13 @@ public class Tank : MonoBehaviour
         //发射音源
         shootAudioSource = gameObject.AddComponent<AudioSource>();
         shootAudioSource.spatialBlend = 1;
+
+        //人工智能
+        if(ctrlType == CtrlType.computer)
+        {
+            ai = gameObject.AddComponent<AI>();
+            ai.tank = this;
+        }
     }
 
     // Update is called once per frame
@@ -125,6 +133,9 @@ public class Tank : MonoBehaviour
         TurretRoll();
         //发送机音效
         MotorSound();
+
+        ComputerCtrl();
+        NoneCtrl();
 
     //    CalExplodePoint();
 
@@ -353,6 +364,11 @@ public class Tank : MonoBehaviour
         if(hp>0)
         {
             hp -= att;
+            //AI处理
+            if(ai!=null)
+            {
+                ai.OnAttecked(attackTank);
+            }
         }
         //被摧毁
         if(hp <=0)
@@ -369,6 +385,7 @@ public class Tank : MonoBehaviour
                     tankCmp.StartDrawKill();
             }
         }
+        
 
     }
 
@@ -499,5 +516,38 @@ public class Tank : MonoBehaviour
             Rect rect = new Rect(Screen.width / 2 - killUI.width / 2, 30, killUI.width, killUI.height);
             GUI.DrawTexture(rect, killUI);
         }
+    }
+
+    /// <summary>
+    /// 电脑控制
+    /// </summary>
+    public void ComputerCtrl()
+    {
+        if (ctrlType != CtrlType.computer)
+            return;
+
+        //炮塔角度
+        Vector3 rot = ai.GetTurretTarget();
+        turretRotTarget = rot.y;
+        turretRollTarget = rot.x;
+
+       if(ai.IsShoot())
+            Shoot();
+        //移动
+        steering = ai.GetSteering();
+        motor = ai.GetMotor();
+        brakeTorque = ai.GetBrakeTorque();
+    }
+
+    /// <summary>
+    /// 无人控制
+    /// </summary>
+    public void NoneCtrl()
+    {
+        if (ctrlType != CtrlType.none)
+            return;
+        motor = 0;
+        steering = 0;
+        brakeTorque = maxBrakeTorque / 2;
     }
 }

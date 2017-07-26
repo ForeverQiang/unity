@@ -88,14 +88,19 @@
     <Reference Include="UnityEditor.iOS.Extensions.Common">
       <HintPath>Library\UnityAssemblies\UnityEditor.iOS.Extensions.Common.dll</HintPath>
     </Reference>
+    <Reference Include="Facebook.Unity.Settings">
+      <HintPath>Library\FacebookSDK\Facebook.Unity.Settings.dll</HintPath>
+    </Reference>
     <Reference Include="Assembly-UnityScript-firstpass">
       <HintPath>Library\ScriptAssemblies\Assembly-UnityScript-firstpass.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\AI.cs" />
     <Compile Include="Assets\AxleInfo.cs" />
     <Compile Include="Assets\Bullet.cs" />
     <Compile Include="Assets\CameraFollow.cs" />
+    <Compile Include="Assets\Path.cs" />
     <Compile Include="Assets\Tank.cs" />
   </ItemGroup>
   <ItemGroup>
