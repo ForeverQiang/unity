@@ -384,6 +384,8 @@ public class Tank : MonoBehaviour
                 if (tankCmp != null && tankCmp.ctrlType == CtrlType.player)
                     tankCmp.StartDrawKill();
             }
+            //战场结算
+            Battle.instance.IsWin(attackTank);
         }
         
 

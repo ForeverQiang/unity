@@ -193,6 +193,9 @@ public class AI : MonoBehaviour {
             //自己
             if (targets[i] = gameObject)
                 continue;
+            //队友
+            if (Battle.instance.IsSameCamp(gameObject, targets[i]))
+                continue;
             //死亡
             if (tank.ctrlType == Tank.CtrlType.none)
                 continue;
@@ -217,6 +220,9 @@ public class AI : MonoBehaviour {
     /// <param name="attackTank"></param>
     public void OnAttecked(GameObject attackTank)
     {
+        //队友
+        if (Battle.instance.IsSameCamp(gameObject, attackTank))
+            return;
         target = attackTank;
     }
 
