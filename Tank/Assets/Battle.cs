@@ -13,11 +13,10 @@ public class Battle : MonoBehaviour
     //开始
     void Start()
     {
-
         //单例
         instance = this;
         //开始战斗
-        StartTwoCampBattle(1, 2);
+        //StartTwoCampBattle(1, 2);
     }
 
     //获取阵营 0表示错误

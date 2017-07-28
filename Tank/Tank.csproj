@@ -102,15 +102,15 @@
     <Compile Include="Assets\BattleTank.cs" />
     <Compile Include="Assets\Bullet.cs" />
     <Compile Include="Assets\CameraFollow.cs" />
-    <Compile Include="Assets\InfoPanel.cs" />
-    <Compile Include="Assets\OptionPanel.cs" />
-    <Compile Include="Assets\PanelBase.cs" />
-    <Compile Include="Assets\PanelMgr.cs" />
+    <Compile Include="Assets\CoreFrame\PanelBase.cs" />
+    <Compile Include="Assets\CoreFrame\PanelMgr.cs" />
+    <Compile Include="Assets\PanelCode\InfoPanel.cs" />
+    <Compile Include="Assets\PanelCode\OptionPanel.cs" />
+    <Compile Include="Assets\PanelCode\TitlePanel.cs" />
+    <Compile Include="Assets\PanelCode\WinPanel.cs" />
     <Compile Include="Assets\Path.cs" />
     <Compile Include="Assets\Root.cs" />
     <Compile Include="Assets\Tank.cs" />
-    <Compile Include="Assets\TitlePanel.cs" />
-    <Compile Include="Assets\WinPanel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Standard Assets\Particles\Sources\Shaders\Particle Alpha Blend (Queue +100).shader" />

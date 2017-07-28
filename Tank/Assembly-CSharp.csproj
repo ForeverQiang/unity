@@ -51,11 +51,18 @@
      <Compile Include="Assets\BattleTank.cs" />
      <Compile Include="Assets\Bullet.cs" />
      <Compile Include="Assets\CameraFollow.cs" />
+     <Compile Include="Assets\CoreFrame\PanelBase.cs" />
+     <Compile Include="Assets\CoreFrame\PanelMgr.cs" />
+     <Compile Include="Assets\PanelCode\InfoPanel.cs" />
+     <Compile Include="Assets\PanelCode\OptionPanel.cs" />
+     <Compile Include="Assets\PanelCode\TitlePanel.cs" />
+     <Compile Include="Assets\PanelCode\WinPanel.cs" />
      <Compile Include="Assets\Path.cs" />
+     <Compile Include="Assets\Root.cs" />
      <Compile Include="Assets\Tank.cs" />
      <None Include="Assets\Standard Assets\Particles\Sources\Shaders\Particle Alpha Blend (Queue +100).shader" />
  <Reference Include="Assembly-UnityScript-firstpass">
- <HintPath>E:/b5U3dDisk/Chapter4/Tank/Library/ScriptAssemblies/Assembly-UnityScript-firstpass.dll</HintPath>
+ <HintPath>E:/b5U3dDisk/Chapter5/Tank/Library/ScriptAssemblies/Assembly-UnityScript-firstpass.dll</HintPath>
  </Reference>
  <Reference Include="UnityEngine.Advertisements">
  <HintPath>D:/unity3d/Unity/Editor/Data/UnityExtensions/Unity/Advertisements/UnityEngine.Advertisements.dll</HintPath>
