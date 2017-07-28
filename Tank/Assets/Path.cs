@@ -1,7 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.AI;
+﻿using UnityEngine;
+using System.Collections;
 
 public class Path
 {
@@ -9,7 +7,7 @@ public class Path
     public Vector3[] waypoints;
     //当前路点索引
     public int index = -1;
-    //当前路点
+    //当前的路点
     public Vector3 waypoint;
     //是否循环
     bool isLoop = false;
@@ -18,11 +16,7 @@ public class Path
     //是否完成
     public bool isFinish = false;
 
-    /// <summary>
     //是否到达目的地
-    /// </summary>
-    /// <param name="trans"></param>
-    /// <returns></returns>
     public bool IsReach(Transform trans)
     {
         Vector3 pos = trans.position;
@@ -30,14 +24,13 @@ public class Path
         return distance < deviation;
     }
 
-    /// <summary>
-    /// 下一个路点
-    /// </summary>
+    //下一个路点
     public void NextWaypoint()
     {
         if (index < 0)
             return;
-        if(index < waypoints.Length - 1)
+
+        if (index < waypoints.Length - 1)
         {
             index++;
         }
@@ -51,78 +44,67 @@ public class Path
         waypoint = waypoints[index];
     }
 
-    /// <summary>
-    /// 根据场景标识物生成路点
-    /// </summary>
-    /// <param name="obj"></param>
-    /// <param name="isLoop"></param>
-    public void InitByObj(GameObject obj, bool isLoop = false)
-    {
-        int length = obj.transform.childCount;
-        //没有子物体
-        if(length == 0)
-        {
-            waypoints = null;
-            index = -1;
-            Debug.LogWarning("Path.InitByObjlength  == 0");
-            return;
-        }
-        //遍历子物体生成路点
-        waypoints = new Vector3[length];
-        for(int i = 0; i < length; i ++)
-        {
-            Transform trans = obj.transform.GetChild(i);
-            waypoints[i] = trans.position;
-        }
-        //设置一些参数 
-        index = 0;
-        waypoint = waypoints[index];
-        this.isLoop = isLoop;
-        isFinish = false;
-    }
 
-    /// <summary>
-    /// 根据导航图初始化路径
-    /// </summary>
-    /// <param name="pos"></param>
-    /// <param name="targetPos"></param>
-    public void InitByNavMeshPath(Vector3 pos,Vector3 targetPos)
-    {
+    //根据场景标识物生成路点
+	public void InitByObj(GameObject obj, bool isLoop = false)
+	{
+		int length = obj.transform.childCount;
+		//没有子物体
+		if(length == 0)
+		{
+			waypoints = null;
+			index = -1;
+			Debug.LogWarning("Path.InitByObj length == 0");
+			return;
+		}
+		//遍历子物体生成路点
+		waypoints = new Vector3[length];
+		for (int i=0; i< length; i++)
+		{
+			Transform trans = obj.transform.GetChild(i);
+			waypoints[i] = trans.position;
+		}
+		//设置一些参数
+		index = 0;
+		waypoint = waypoints[index];
+		this.isLoop = isLoop;
+		isFinish = false;
+	}
+
+    //根据导航图初始化路径
+	public void InitByNavMeshPath(Vector3 pos, Vector3 targetPos)
+	{
         //重置
-        waypoints = null;
-        index = -1;
+		waypoints = null;
+		index = -1;
         //计算路径
-        NavMeshPath navPath = new NavMeshPath();
-        bool hasFoundPath = NavMesh.CalculatePath(pos, targetPos, NavMesh.AllAreas, navPath);
-
-        if (!hasFoundPath)
-            return;
+		UnityEngine.AI.NavMeshPath navPath = new UnityEngine.AI.NavMeshPath();
+		bool hasFoundPath = UnityEngine.AI.NavMesh.CalculatePath(pos, targetPos, UnityEngine.AI.NavMesh.AllAreas, navPath);
+		if (!hasFoundPath)
+			return;
         //生成路径
-        int length = navPath.corners.Length;
-        waypoints = new Vector3[length];
-        for (int i = 0; i < length; i++)
-            waypoints[i] = navPath.corners[i];
+		int length = navPath.corners.Length;
+		waypoints = new Vector3[length];
+		for (int i = 0; i < length; i++)
+			waypoints[i] = navPath.corners[i];
 
-        index = 0;
-        waypoint = waypoints[index];
+		index = 0;
+		waypoint = waypoints[index];
         isFinish = false;
-    }
+	}
 
-    /// <summary>
-    /// 调试路径
-    /// </summary>
-    public void DrawWaypoints()
-    {
-        if (waypoints == null)
-            return;
-        int length = waypoints.Length;
-        for (int i = 0; i < length; i++)
-        {
-            if (i == index)
-                Gizmos.DrawSphere(waypoints[i], 1);
-            else
-                Gizmos.DrawCube(waypoints[i], Vector3.one);
-        }
-    }
-
+    //调试路径
+	public void DrawWaypoints()
+	{
+		if (waypoints == null)
+			return;
+		int length = waypoints.Length;
+		for (int i = 0; i < length; i++)
+		{
+			if(i == index)
+				Gizmos.DrawSphere(waypoints[i], 1);
+			else
+				Gizmos.DrawCube(waypoints[i], Vector3.one);
+		}
+	}
 }

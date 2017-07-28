@@ -1,51 +1,64 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using System.Collections;
 
-public class CameraFollow : MonoBehaviour {
-
-    public float distance = 15;
+public class CameraFollow : MonoBehaviour
+{
+    //距离
+    public float distance = 8;
+    //横向角度
     public float rot = 0;
+    //纵向角度
     private float roll = 30f * Mathf.PI * 2 / 360;
-
+    //目标物体
     private GameObject target;
+    //横向旋转速度
+    public float rotSpeed = 0.2f;
+    //纵向角度范围
+    private float maxRoll = 70f * Mathf.PI * 2 / 360;
+    private float minRoll = -10f * Mathf.PI * 2 / 360;
+    //纵向旋转速度
+    private float rollSpeed = 0.2f;
+    //距离范围
+    public float maxDistance = 22f;
+    public float minDistance = 5f;
+    //距离变化速度
+    public float zoomSpeed = 0.2f;
 
-    private void Start()
+    void Start()
     {
-        target = GameObject.Find("tank");
-        //SetTarget(GameObject.Find("Tank"));
-
+        //找到坦克
+        //target = GameObject.Find("Tank");
+        //SetTarget(GameObject.Find ("Tank"));
     }
 
-    private void LateUpdate()
+    void LateUpdate() 
     {
+        //一些判断
         if (target == null)
             return;
         if (Camera.main == null)
             return;
-
-        Rotate();
-        Roll();
-        Zoom();
-
+        //目标的坐标
         Vector3 targetPos = target.transform.position;
-
-        Vector3 CameraPos;
-        float d = distance * Mathf.Cos(roll);
+        //用三角函数计算相机位置
+        Vector3 cameraPos;
+        float d = distance *Mathf.Cos (roll);
         float height = distance * Mathf.Sin(roll);
-        CameraPos.x = targetPos.x + d * Mathf.Sin(roll);
-        CameraPos.z = targetPos.z + d * Mathf.Cos(roll);
-        CameraPos.y = targetPos.y + height;
-
-        Camera.main.transform.position = CameraPos;
-
+        cameraPos.x = targetPos.x +d * Mathf.Cos(rot);
+        cameraPos.z = targetPos.z + d * Mathf.Sin(rot);
+        cameraPos.y = targetPos.y + height;
+        Camera.main.transform.position = cameraPos;
+        //对准目标
         Camera.main.transform.LookAt(target.transform);
+        //纵向旋转
+        Rotate();
+        //横向旋转
+        Roll();
+        //调整距离
+        Zoom();
     }
 
-    /// <summary>
-    /// 中心点
-    /// </summary>
-    /// <param name="target"></param>
+    //设置目标
     public void SetTarget(GameObject target)
     {
         if (target.transform.Find("cameraPoint") != null)
@@ -54,27 +67,14 @@ public class CameraFollow : MonoBehaviour {
             this.target = target;
     }
 
-    /// <summary>
-    /// 横向旋转相机
-    /// </summary>
-    /// 
-    //横向旋转速度
-    public float rotSpeed = 0.2f;
-
+    //横向旋转
     void Rotate()
     {
         float w = Input.GetAxis("Mouse X") * rotSpeed;
         rot -= w;
     }
 
-    /// <summary>
-    /// 纵向旋转相机
-    /// </summary>
-    //纵向角度范围
-    private float maxRoll = 70f * Mathf.PI * 2 / 360;
-    private float minRoll = -10f * Mathf.PI * 2 / 360;
-    //纵向旋转速度
-    private float rollSpeed = 0.2f;
+    //纵向旋转
     void Roll()
     {
         float w = Input.GetAxis("Mouse Y") * rollSpeed * 0.5f;
@@ -86,21 +86,15 @@ public class CameraFollow : MonoBehaviour {
             roll = minRoll;
     }
 
-    /// <summary>
-    ///调整距离
-    /// </summary>
-    public float maxDistance = 22f;
-    public float minDistance = 5;
-    public float zoomSpeed = 0.2f;
-
+    //调整距离
     void Zoom()
     {
-        if(Input.GetAxis("Mouse ScrollWheel") > 0 )     //向上滚动
+        if (Input.GetAxis("Mouse ScrollWheel") > 0)
         {
             if (distance > minDistance)
                 distance -= zoomSpeed;
         }
-        else if(Input.GetAxis("Mouse ScrollWheel") < 0)       //向上滚动
+        else if (Input.GetAxis("Mouse ScrollWheel") < 0)
         {
             if (distance < maxDistance)
                 distance += zoomSpeed;

@@ -1,6 +1,5 @@
-﻿
-public class BattleTank {
-
+﻿public class BattleTank
+{
     public Tank tank;
-    public int camp;//阵营
+    public int camp;
 }

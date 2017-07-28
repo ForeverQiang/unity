@@ -1,26 +1,22 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using System.Collections;
 
-public class Bullet : MonoBehaviour {
-
+public class Bullet : MonoBehaviour
+{
     public float speed = 100f;
     public GameObject explode;
     public float maxLiftTime = 2f;
     public float instantiateTime = 0f;
 
-    //爆炸音效
-    public AudioClip explodeClip;
-
     //攻击方
     public GameObject attackTank;
 
-    /// <summary>
-    /// 
-    /// </summary>
+    //爆炸音效
+    public AudioClip explodeClip;
+
     void Start()
     {
-        instantiateTime = Time.time;   
+        instantiateTime = Time.time;
     }
 
     void Update()
@@ -32,15 +28,13 @@ public class Bullet : MonoBehaviour {
             Destroy(gameObject);
     }
 
-    /// <summary>
-    /// 碰撞
-    /// </summary>
-    /// <param name="collision"></param>
+    //碰撞
     void OnCollisionEnter(Collision collisionInfo)
     {
         //打到自身
         if (collisionInfo.gameObject == attackTank)
             return;
+
         //爆炸效果
         GameObject explodeObj = (GameObject)Instantiate(explode, transform.position, transform.rotation);
         //爆炸音效
@@ -51,17 +45,14 @@ public class Bullet : MonoBehaviour {
         Destroy(gameObject);
         //击中坦克
         Tank tank = collisionInfo.gameObject.GetComponent<Tank>();
-        if(tank != null)
+        if (tank != null)
         {
             float att = GetAtt();
-            tank.BeAttacked(att,attackTank);
+            tank.BeAttacked(att, attackTank);
         }
     }
 
-    /// <summary>
-    /// 计算攻击力
-    /// </summary>
-    /// <returns></returns>
+    //计算攻击力
     private float GetAtt()
     {
         float att = 100 - (Time.time - instantiateTime) * 40;
@@ -70,3 +61,4 @@ public class Bullet : MonoBehaviour {
         return att;
     }
 }
+
