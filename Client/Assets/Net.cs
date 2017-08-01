@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Sockets;
 using UnityEngine;
 using UnityEngine.UI;
@@ -105,10 +106,13 @@ public class Net : MonoBehaviour {
     {
         string str = textInput.text;
         byte[] bytes = System.Text.Encoding.Default.GetBytes(str);
-        try
-        {
-            socket.Send(bytes);
-        }
-        catch { }
+        byte[] length = BitConverter.GetBytes(bytes.Length);
+        byte[] sendbuff = length.Concat(bytes).ToArray();
+        socket.Send(sendbuff);
+        //try
+        //{
+        //    socket.Send(bytes);
+        //}
+        //catch { }
     }
 }

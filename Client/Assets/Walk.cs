@@ -19,6 +19,10 @@ public class Walk : MonoBehaviour
     public GameObject prefab;
     //自己的IP和端口
     string id;
+    //粘包
+    int buffCount = 0;
+    byte[] lenBytes = new byte[sizeof(UInt32)];
+    Int32 msgLength = 0;
 
     //添加玩家
     void AddPlayer(string id, Vector3 pos)
@@ -130,8 +134,11 @@ public class Walk : MonoBehaviour
         {
             int count = socket.EndReceive(ar);
             //数据处理
-            string str = System.Text.Encoding.UTF8.GetString(readBuff, 0, count);
-            msgList.Add(str);
+            //  string str = System.Text.Encoding.UTF8.GetString(readBuff, 0, count);
+            //  msgList.Add(str);
+
+            buffCount += count;
+            ProcessData();
             //继续接受
             socket.BeginReceive(readBuff, 0, BUFFER_SIZE, SocketFlags.None, ReceiveCb, null);
         }
@@ -139,6 +146,30 @@ public class Walk : MonoBehaviour
         {
             socket.Close();
         }
+    }
+
+    private void ProcessData()
+    {
+        //小于长度字节
+        if (buffCount < sizeof(Int32))
+            return;
+        //消息长度
+        Array.Copy(readBuff, lenBytes, sizeof(Int32));
+        msgLength = BitConverter.ToInt32(lenBytes, 0);
+        if (buffCount < msgLength + sizeof(Int32))
+            return;
+        //处理消息
+        string str = System.Text.Encoding.UTF8.GetString(readBuff, sizeof(Int32), (int)msgLength);
+      //  recvStr = str;
+        //清除已处理的消息
+        int count = buffCount - msgLength - sizeof(Int32);
+        Array.Copy(readBuff, msgLength, readBuff, 0, count);
+        buffCount = count;
+        if(buffCount > 0)
+        {
+            ProcessData();
+        }
+
     }
 
     void Update()
