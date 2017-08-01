@@ -46,10 +46,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="core\Conn.cs" />
     <Compile Include="core\DataMgr.cs" />
     <Compile Include="core\Player.cs" />
-    <Compile Include="core\PlayerData.cs" />
+    <Compile Include="core\ServNet.cs" />
+    <Compile Include="Logic\PlayerData.cs" />
     <Compile Include="core\Main.cs" />
+    <Compile Include="Logic\PlayerTempData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

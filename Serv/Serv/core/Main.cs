@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Serv.core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -32,7 +33,7 @@ namespace Serv
             else
                 Console.WriteLine("获取玩家数据失败");
             //更改玩家数据
-           // pd.score += 10;
+            pd.score += 10;
             //保存数据
             Player p = new Player();
             p.id = "Lpy";
@@ -44,6 +45,12 @@ namespace Serv
                 Console.WriteLine("获取玩家成功 分数是  " + pd.score);
             else
                 Console.WriteLine("重新获取玩家数据失败");
+
+            ServNet servNet = new ServNet();
+            servNet.Start("127.0.0.1", 1234);
+            Console.ReadLine();
+
+
         }
     }
 }

@@ -57,6 +57,7 @@ namespace Serv
         //判断安全字符串
         public bool IsSafeStr(string str)
         {
+            //Console.WriteLine(!Regex.IsMatch(str, @"[-|;|,|\/|\(|\)|\[|\]|\}|\{|%|@|\*|!|\']"));
             return !Regex.IsMatch(str, @"[-|;|,|\/|\(|\)|\[|\]|\}|\{|%|@|\*|!|\']");
         }
 
@@ -64,7 +65,11 @@ namespace Serv
         private bool CanRegister(string id)
         {
             if (!IsSafeStr(id))
+            {
+                Console.WriteLine(IsSafeStr(id));
                 return false;
+            }
+                
 
             //查询id是否存在
             string cmdStr = string.Format("select * from user where id='{0}';", id);
@@ -88,7 +93,7 @@ namespace Serv
         public bool Register(string id,string pw)
         {
             //防止sql注入
-            if (!IsSafeStr(id) || IsSafeStr(pw))
+            if (!IsSafeStr(id) || !IsSafeStr(pw))
             {
                 Console.WriteLine("[DataMgr]Register 使用非法字符");
                 return false;
@@ -100,7 +105,7 @@ namespace Serv
                 return false;
             }
             //写入数据库user表
-            string cmdStr = string.Format("insert into user ser id = '{0}', pw = '{1}';", id, pw);
+            string cmdStr = string.Format("insert into user set id = '{0}', pw = '{1}';", id, pw);
             MySqlCommand cmd = new MySqlCommand(cmdStr, sqlconn);
             try
             {
@@ -134,8 +139,8 @@ namespace Serv
                 Console.WriteLine("[DataMgr]CreatePlayer 序列化" + e.Message);
                 return false;
             }
-
             byte[] byteArr = stream.ToArray();
+            
             //写入数据库
             string cmdStr = string.Format("insert into player set id='{0}', data = @data;", id);
             MySqlCommand cmd = new MySqlCommand(cmdStr, sqlconn);
@@ -146,7 +151,7 @@ namespace Serv
                 cmd.ExecuteNonQuery();
                 return true;
             }
-            catch(Exception e)
+            catch(Exception e)  
             {
                 Console.WriteLine("[DataMgr]CreatePlayer 写入" + e.Message);
                 return false;
