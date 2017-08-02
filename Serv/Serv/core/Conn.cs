@@ -49,7 +49,8 @@ namespace Serv.core
             isUse = true;
             buffCount = 0;
             //心跳处理，稍后实现GetTimeStamp方法
-            //lastTickTime = Sys.GetTimeStamp();
+            lastTickTime = Sys.GetTimeStamp();
+
         }
 
         //剩余的buff
@@ -84,9 +85,9 @@ namespace Serv.core
         }
 
         //发送协议，相关内容稍后实现
-        //public void Send(ProtocolBase protocol)
-        //{
-        //    ServNet.instance.Send(this, protocol);
-        //}
+        public void Send(ProtocolBase protocol)
+        {
+            ServNet.instance.Send(this, protocol);
+        }
     }
 }

@@ -8,11 +8,13 @@
  * 描述说明： 服务器处理网络连接的部分   Socker->Bind->Accept->接收和处理->关闭连接
  * 修改历史：
  * ************************************************************************************************************/
+using Serv.Logic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -28,6 +30,17 @@ namespace Serv.core
         public int maxConn = 50;
         //单例
         public static ServNet instance;
+        //主定时器
+        System.Timers.Timer timer = new System.Timers.Timer(1000);
+        //心跳时间
+        public long heartBeatTime = 10;
+        //协议
+        public ProtocolBase proto;
+
+        //消息分发
+        public HandleConnMsg handleConnMsg = new HandleConnMsg();
+        public HandlePlayerEvent handlePlayerEvent = new HandlePlayerEvent();
+        public HandlePlayerMsg handlePlayerMsg = new HandlePlayerMsg();
 
         public ServNet()
         {
@@ -57,6 +70,12 @@ namespace Serv.core
         //开启服务器
         public void Start(string host, int port)
         {
+
+            //定时器
+
+            timer.Elapsed += new System.Timers.ElapsedEventHandler(HandleMainTimer);
+            timer.AutoReset = false;
+            timer.Enabled = true;
             //连接池
             conns = new Conn[maxConn];
             for(int i = 0; i  < maxConn; i++ )
@@ -152,7 +171,13 @@ namespace Serv.core
             //处理消息
             string str = System.Text.Encoding.UTF8.GetString(conn.readBuff, sizeof(Int32), conn.msgLength);
             Console.WriteLine("收到消息[ " + conn.GetAdress() + "] " + str);
-            Send(conn, str);
+
+            ProtocolBase protocol = proto.Decode(conn.readBuff, sizeof(Int32), conn.msgLength);
+            HandleMsg(conn,protocol);
+
+            //if (str == "HeatBeat")
+            //    conn.lastTickTime = Sys.GetTimeStamp();
+            //Send(conn, str);
             //清除已处理的消息
             int count = conn.buffCount - conn.msgLength - sizeof(Int32);
             Array.Copy(conn.readBuff, sizeof(Int32) + conn.msgLength, conn.readBuff, 0, count);
@@ -164,9 +189,9 @@ namespace Serv.core
         }
 
         //发送
-        public void Send(Conn conn,string str)
+        public void Send(Conn conn,ProtocolBase protocol)
         {
-            byte[] bytes = System.Text.Encoding.UTF8.GetBytes(str);
+            byte[] bytes = protocol.Encode();
             byte[] length = BitConverter.GetBytes(bytes.Length);
             byte[] sendbuff = length.Concat(bytes).ToArray();
             try
@@ -195,5 +220,116 @@ namespace Serv.core
                 }
             }
         }
+
+        //主定时器
+        public void HandleMainTimer(object sender, System.Timers.ElapsedEventHandler e)
+        {
+            //处理心跳
+            HeartBeat();
+            timer.Start();
+        }
+
+        //心跳
+        public void HeartBeat()
+        {
+            Console.WriteLine("[住定时器执行]");
+            long timeNow = Sys.GetTimeStamp();
+
+            for(int i = 0; i < conns.Length; i++)
+            {
+                Conn conn = conns[i];
+                if (conn == null)
+                    continue;
+                if (!conn.isUse)
+                    continue;
+
+                if(conn.lastTickTime < timeNow - heartBeatTime)
+                {
+                    Console.WriteLine("[心跳引起断开连接]" + conn.GetAdress());
+                    lock (conn)
+                        conn.Close();
+                }
+            }
+        }
+
+        private void HandleMsg(Conn conn, ProtocolBase protoBase)
+        {
+            /* string name = protoBase.GetName();
+             Console.WriteLine("[收到协议]" + name);
+             //处理心跳
+             if(name == "HeatBeat")
+             {
+                 Console.WriteLine("[更新心跳时间]" + conn.GetAdress());
+                 conn.lastTickTime = Sys.GetTimeStamp();
+             }
+             //回射
+             Send(conn, protoBase);*/
+
+            string name = protoBase.GetName();
+            string methodName = "Msg" + name;
+            //连接协议分发
+            if(conn.player == null || name == "HeatBeat" || name=="Logout")
+            {
+                MethodInfo mm = handleConnMsg.GetType().GetMethod(methodName);
+                if(mm == null)
+                {
+                    string str = "[警告]HandleMsg没有处理连接方法 ";
+                    Console.WriteLine(str + methodName);
+                    return;
+                }
+                object[] obj = new object[] { conn, protoBase };
+                Console.WriteLine("[处理连接消息]" + conn.GetAdress() + " :" + name);
+                mm.Invoke(handleConnMsg, obj);
+            }
+            //角色协议分发
+            else
+            {
+                MethodInfo mm = handlePlayerMsg.GetType().GetMethod(methodName);
+                if(mm == null)
+                {
+                    string str = "[警告]HandleMsg没有处理玩家方法";
+                    Console.WriteLine(str + methodName);
+                    return;
+                }
+                object[] obj = new object[] { conn.player, protoBase };
+                Console.WriteLine("[处理玩家消息]" + conn.player.id + " : " + name);
+                mm.Invoke(handlePlayerMsg, obj);
+            }
+        }
+
+        //广播
+        public void BroadCast(ProtocolBase protocol)
+        {
+            for(int i = 0;i < conns.Length; i ++)
+            {
+                if (!conns[i].isUse)
+                    continue;
+                if (conns[i].player == null)
+                    continue;
+                Send(conns[i], protocol);
+            }
+        }
+
+        //打印服务器信息
+        public void Print()
+        {
+            Console.WriteLine("===服务器登陆信息===");
+            for(int i = 0; i < conns.Length; i ++ )
+            {
+                if (conns[i] == null)
+                    continue;
+                if (!conns[i].isUse)
+                    continue;
+
+                string str = "连接[" + conns[i].GetAdress() + "] ";
+
+                if (conns[i].player != null)
+                    str += "玩家id " + conns[i].player.id;
+
+                Console.WriteLine(str);
+            }
+
+        }
+
     }
 }

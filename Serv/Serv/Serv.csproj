@@ -49,7 +49,14 @@
     <Compile Include="core\Conn.cs" />
     <Compile Include="core\DataMgr.cs" />
     <Compile Include="core\Player.cs" />
+    <Compile Include="core\ProtocolStr.cs" />
+    <Compile Include="core\ProtocolBase.cs" />
+    <Compile Include="core\ProtocolBytes.cs" />
     <Compile Include="core\ServNet.cs" />
+    <Compile Include="core\Sys.cs" />
+    <Compile Include="Logic\HandleConnMsg.cs" />
+    <Compile Include="Logic\HandlePlayerEvent.cs" />
+    <Compile Include="Logic\HandlePlayerMsg.cs" />
     <Compile Include="Logic\PlayerData.cs" />
     <Compile Include="core\Main.cs" />
     <Compile Include="Logic\PlayerTempData.cs" />
