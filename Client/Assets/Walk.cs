@@ -13,6 +13,11 @@ public class Walk : MonoBehaviour
     public byte[] readBuff = new byte[BUFFER_SIZE];
     //玩家列表
     Dictionary<string, GameObject> players = new Dictionary<string, GameObject>();
+    //self
+    string palyerID = "";
+    //上次移动的时间
+    public float lastMoveTime;
+
     //消息列表
     List<string> msgList = new List<string>();
     //Player预设
@@ -24,31 +29,165 @@ public class Walk : MonoBehaviour
     byte[] lenBytes = new byte[sizeof(UInt32)];
     Int32 msgLength = 0;
 
+    public static Walk instance;
+
+    void Start()
+    {
+        instance = this;
+    }
     //添加玩家
     void AddPlayer(string id, Vector3 pos)
     {
         GameObject player = (GameObject)Instantiate(prefab, pos, Quaternion.identity);
         TextMesh textMesh = player.GetComponent<TextMesh>();
-        textMesh.text = id;
+        textMesh.text = id + ":" + score; 
         players.Add(id, player);
+    }
+
+    //删除玩家
+    void DelPlayer(string id)
+    {
+        //已经初始化该玩家
+        if(players.ContainsKey(id))
+        {
+            Destroy(players[id]);
+            players.Remove(id);
+        }
+    }
+
+    //更新分数
+    public void UpdateScore(string id, int score)
+    {
+        GameObject player = players[id];
+        if (player == null)
+            return;
+        TextMesh textmesh = player.GetComponent<TextMesh>();
+        textmesh.text = id + ": " + score;
+    }
+
+    //更新信息
+    public void UpdateInfo(string id, Vector3 pos, int score)
+    {
+        //只更新自己的分数
+        if(id == playerID)
+        {
+            UpdateScore(id, score);
+            return;
+        }
+
+        //其他人
+        //已经初始化该玩家
+        if(players.ContainsKey(id))
+        {
+            players[id].transform.position = pos;
+            UpdateScore(id, score);
+        }
+
+
+        //尚未初始化该玩家
+        else
+        {
+            AddPlayer(id, pos, score);
+        }
+    }
+
+    public void startGame(string id)
+    {
+        playerID = id;
+        //产生自己
+        UnityEngine.Random.seed = (int)DateTime.Now.Ticks;
+        float x = 100 + UnityEngine.Random.Random(-30, 30);
+        float y = 0;
+        float z = 100 + UnityEngine.Random.Random(-30, 30);
+        Vector3 pos = new Vector3(x, y, z);
+        AddPlayer(playerID, pos, 0);
+        //同步
+        SendPos();
+
+        //获取列表
+        ProtocolBytes proto = new ProtocolBytes();
+        proto.AddString("GetList");
+        NetMgr.SrvConn.Send(proto, GetList);
+        NetMgr.SrvConn.msgDist.AddListener("UpdateInfo", UpdateInfo);
+        NetMgr.SrvConn.msgDist.AddListener("PlayerLeave", PlayerLeave);
+
     }
 
     //发送位置协议
     void SendPos()
     {
-        GameObject player = players[id];
+        GameObject player = players[playerID];
         Vector3 pos = player.transform.position;
         //组装协议
-        string str = "POS ";
-        str += id + " ";
-        str += pos.x.ToString() + " ";
-        str += pos.y.ToString() + " ";
-        str += pos.z.ToString() + " ";
+        //string str = "POS ";
+        //str += id + " ";
+        //str += pos.x.ToString() + " ";
+        //str += pos.y.ToString() + " ";
+        //str += pos.z.ToString() + " ";
 
-        byte[] bytes = System.Text.Encoding.Default.GetBytes(str);
-        socket.Send(bytes);
-        Debug.Log("发送" + str);
+        //消息
+        ProtocolBytes proto = new ProtocolBytes();
+        proto.AddString("UpdateInfo");
+        proto.AddFloat(pos.x);
+        proto.AddFloat(pos.y);
+        proto.AddFloat(pos.z);
+        NetMgr.SrvConn.Send(proto);
+
+        //byte[] bytes = System.Text.Encoding.Default.GetBytes(str);
+        //socket.Send(bytes);
+        //Debug.Log("发送" + str);
     }
+
+    //更新列表
+    public void GetList(ProtocolBase protocol)
+    {
+        ProtocolBytes proto = (ProtocolBytes)protocol;
+        //获取头部数值
+        int start = 0;
+        string protoName = proto.GetString(start, ref start);
+        int count = proto.GetInt(start, ref start);
+
+        //遍历
+        for(int i = 0; i < count; i ++)
+        {
+            string id = proto.GetString(start, ref start);
+            float x = proto.GetFloat(start, ref start);
+            float y = proto.GetFloat(start, ref start);
+            float z = proto.GetFloat(start, ref start);
+            int Score = proto.GetInt(start, ref start);
+            Vector3 pos = = new Vector3(x, y, z);
+            UpdateInfo(id, pos, score);
+        }
+    }
+
+    //更新信息
+    public void UpdateInfo(ProtocolBase protocol)
+    {
+        //获取数值
+        ProtocolBytes proto = (ProtocolBytes)protocol;
+        int start = 0;
+        string protoName = proto.GetString(start, ref start);
+        string id = proto.GetString(start, ref start);
+        float x = proto.GetFloat(start, ref start);
+        float y = proto.GetFloat(start, ref start);
+        float z = proto.GetFloat(start, ref start);
+        int score = proto.GetInt(start, ref start);
+        Vector3 pos = new Vector3(x, y, z);
+        UpdateInfo(id, pos, score);
+    }
+
+    //玩家离开
+    public void PlayerLeave(ProtocolBase protocol)
+    {
+        ProtocolBytes proto = (ProtocolBytes)protocol;
+        //获取数值
+        int start = 0;
+        string protoName = proto.GetString(start, ref start);
+        string id = proto.GetString(start, ref start);
+
+        DelPlayer(id);
+    }
+
 
     //发送离开协议
     void SendLeave()
