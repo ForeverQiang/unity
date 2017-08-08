@@ -1,10 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using System.Collections;
 using UnityEngine.UI;
 
-public class RegPanel : MonoBehaviour {
-
+public class RegPanel : PanelBase
+{
     private InputField idInput;
     private InputField pwInput;
     private Button regBtn;
@@ -12,7 +11,7 @@ public class RegPanel : MonoBehaviour {
 
     #region 生命周期
     //初始化
-    private override void Init(params object[] args)
+    public override void Init(params object[] args)
     {
         base.Init(args);
         skinPath = "RegPanel";
@@ -23,14 +22,15 @@ public class RegPanel : MonoBehaviour {
     {
         base.OnShowing();
         Transform skinTrans = skin.transform;
-        idInput = skinTrans.FindChild("IDInput").GetComponent<InputField>();
-        pwInput = skinTrans.FindChild("PWInput").GetComponent<InputField>();
-        regBtn = skinTrans.FindChild("RegBtn").GetComponent<Button>();
-        closeBtn = skinTrans.FindChild("CloseBtn").GetComponent<Button>();
+        idInput = skinTrans.Find("IDInput").GetComponent<InputField>();
+        pwInput = skinTrans.Find("PWInput").GetComponent<InputField>();
+        regBtn = skinTrans.Find("RegBtn").GetComponent<Button>();
+        closeBtn = skinTrans.Find("CloseBtn").GetComponent<Button>();
 
         regBtn.onClick.AddListener(OnRegClick);
-        closeBtn.onClick.AddListener(onCloseClick);
+        closeBtn.onClick.AddListener(OnCloseClick);
     }
+    #endregion
 
 
     public void OnCloseClick()
@@ -41,48 +41,44 @@ public class RegPanel : MonoBehaviour {
 
     public void OnRegClick()
     {
-        //用户名、密码为空
-        if(idInput.text == "" || pwInput.text == "")
+        //用户名密码为空
+        if (idInput.text == "" || pwInput.text == "")
         {
-            Debug.Log("用户名密码不能为空");
+            Debug.Log("用户名密码不能为空!");
             return;
         }
 
-        if(NetMgr.SrvConn.status != Connection.Status.Connected )
+        if (NetMgr.srvConn.status != Connection.Status.Connected)
         {
             string host = "127.0.0.1";
             int port = 1234;
-            NetMgr.SrvConn.proto = new ProtocolBytes();
-            NetMgr.SrvConn.Connect(host, port);
+            NetMgr.srvConn.proto = new ProtocolBytes();
+            NetMgr.srvConn.Connect(host, port);
         }
-
         //发送
         ProtocolBytes protocol = new ProtocolBytes();
         protocol.AddString("Register");
         protocol.AddString(idInput.text);
         protocol.AddString(pwInput.text);
         Debug.Log("发送 " + protocol.GetDesc());
-        NetMgr.SrvConn.Send(protocol, onRegBack);
+        NetMgr.srvConn.Send(protocol, OnRegBack);
     }
 
-    public void OnregBack(ProtocolBase protocol)
+    public void OnRegBack(ProtocolBase protocol)
     {
         ProtocolBytes proto = (ProtocolBytes)protocol;
         int start = 0;
-        string ProtoName = proto.GetString(start, ref start);
-
+        string protoName = proto.GetString(start, ref start);
         int ret = proto.GetInt(start, ref start);
-
-        if(ret == 0)
+        if (ret == 0)
         {
-            Debug.Log("注册成功");
+            Debug.Log("注册成功!");
             PanelMgr.instance.OpenPanel<LoginPanel>("");
-            closeBtn();
+            Close();
         }
         else
         {
-            Debug.Log("注册失败");
+            Debug.Log("注册失败!");
         }
     }
-#endregion
 }

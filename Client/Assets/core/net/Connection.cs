@@ -1,30 +1,23 @@
-﻿ /**************************************************************************************************************
- * 作    者： 吴军强
- * CLR 版本： 4.0.30319.42000
- * 创建时间： 8/4/2017 1:16:46 PM
- * 当前版本： 1.0.0.1
- * 编写系统： ASUS-PC
- * 区    域： ASUS-PC
- * 描述说明：
- * 修改历史：
- * ************************************************************************************************************/
+﻿using UnityEngine;
 using System;
+using System.Net;
+using System.Net.Sockets;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Sockets;
-using System.Text;
-using UnityEngine;
+using System.IO;
 
-public class Connection: MonoBehaviour
+//网络链接
+public class Connection
 {
     //常量
     const int BUFFER_SIZE = 1024;
-    //socket
+    //Socket
     private Socket socket;
-    //buff
+    //Buff
     private byte[] readBuff = new byte[BUFFER_SIZE];
     private int buffCount = 0;
-    //粘包分包
+    //沾包分包
     private Int32 msgLength = 0;
     private byte[] lenBytes = new byte[sizeof(Int32)];
     //协议
@@ -34,7 +27,7 @@ public class Connection: MonoBehaviour
     public float heartBeatTime = 30;
     //消息分发
     public MsgDistribution msgDist = new MsgDistribution();
-    //状态
+    ///状态
     public enum Status
     {
         None,
@@ -43,24 +36,28 @@ public class Connection: MonoBehaviour
     public Status status = Status.None;
 
 
-    //连接服务器
-    public bool Connect(string str,int port)
+    //连接服务端
+    public bool Connect(string host, int port)
     {
         try
         {
             //socket
-            socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            //connect
+            socket = new Socket(AddressFamily.InterNetwork,
+                      SocketType.Stream, ProtocolType.Tcp);
+            //Connect
             socket.Connect(host, port);
             //BeginReceive
-            socket.BeginReceive(readBuff, buffCount, BUFFER_SIZE - buffCount, SocketFlags.None, ReceiveCb, readBuff);
+            socket.BeginReceive(readBuff, buffCount,
+                      BUFFER_SIZE - buffCount, SocketFlags.None,
+                      ReceiveCb, readBuff);
+            Debug.Log("连接成功");
             //状态
             status = Status.Connected;
             return true;
         }
-        catch(Exception e)
+        catch (Exception e)
         {
-            Debug.Log("连接失败： " + e.Message);
+            Debug.Log("连接失败:" + e.Message);
             return false;
         }
     }
@@ -75,24 +72,26 @@ public class Connection: MonoBehaviour
         }
         catch (Exception e)
         {
-            Debug.Log("关闭连接: " + e.Message);
+            Debug.Log("关闭失败:" + e.Message);
             return false;
         }
     }
 
     //接收回调
-    public void ReceiveCb(IAsyncResult ar)
+    private void ReceiveCb(IAsyncResult ar)
     {
         try
         {
             int count = socket.EndReceive(ar);
             buffCount = buffCount + count;
             ProcessData();
-            socket.BeginReceive(readBuff, buffCount, BUFFER_SIZE - buffCount, SocketFlags.None, ReceiveCb, readBuff);
+            socket.BeginReceive(readBuff, buffCount,
+                     BUFFER_SIZE - buffCount, SocketFlags.None,
+                     ReceiveCb, readBuff);
         }
-        catch(Exception e)
+        catch (Exception e)
         {
-            Debug.Log("ReceiveCb 失败 :" + e.Message);
+            Debug.Log("ReceiveCb失败:" + e.Message);
             status = Status.None;
         }
     }
@@ -100,37 +99,37 @@ public class Connection: MonoBehaviour
     //消息处理
     private void ProcessData()
     {
-        //粘包分包处理
+        //小于长度字节
         if (buffCount < sizeof(Int32))
             return;
-
-        //包体长度
+        //消息长度
         Array.Copy(readBuff, lenBytes, sizeof(Int32));
         msgLength = BitConverter.ToInt32(lenBytes, 0);
         if (buffCount < msgLength + sizeof(Int32))
             return;
-        //协议编码
+        //处理消息
         ProtocolBase protocol = proto.Decode(readBuff, sizeof(Int32), msgLength);
-        Debug.Log("收到信息:" + protocol.GetDesc());
-        lock(msgDist.msgList)
+        Debug.Log("收到消息 " + protocol.GetDesc());
+        lock (msgDist.msgList)
         {
             msgDist.msgList.Add(protocol);
         }
         //清除已处理的消息
         int count = buffCount - msgLength - sizeof(Int32);
-        Array.Copy(readBuff, sizeof(Int32) + msgLength, readBuff, 0, count);
+        Array.Copy(readBuff,sizeof(Int32)+ msgLength, readBuff, 0, count);
         buffCount = count;
-        if(buffCount > 0 )
+        if (buffCount > 0)
         {
             ProcessData();
         }
     }
 
+
     public bool Send(ProtocolBase protocol)
     {
-        if(status != Status.Connected)
+        if (status != Status.Connected)
         {
-            Debug.Log("[Connection] 还没有连接就发送数据是不好的");
+            Debug.LogError("[Connection]还没链接就发送数据是不好的");
             return true;
         }
 
@@ -139,7 +138,7 @@ public class Connection: MonoBehaviour
 
         byte[] sendbuff = length.Concat(b).ToArray();
         socket.Send(sendbuff);
-        Debug.Log("[发送消息] " + protocol.GetDesc());
+        Debug.Log("发送消息 " + protocol.GetDesc());
         return true;
     }
 
@@ -151,10 +150,27 @@ public class Connection: MonoBehaviour
         return Send(protocol);
     }
 
-    public bool Send(ProtocolBase protocol, MsgDistribution.Delegate cb )
+    public bool Send(ProtocolBase protocol, MsgDistribution.Delegate cb)
     {
         string cbName = protocol.GetName();
         return Send(protocol, cbName, cb);
     }
-}
 
+
+
+    public void Update()
+    {
+        //消息
+        msgDist.Update();
+        //心跳
+        if (status == Status.Connected)
+        {
+            if (Time.time - lastTickTime > heartBeatTime)
+            {
+                ProtocolBase protocol = NetMgr.GetHeatBeatProtocol();
+                Send(protocol);
+                lastTickTime = Time.time;
+            }
+        }
+    }
+}
