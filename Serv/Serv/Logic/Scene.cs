@@ -71,7 +71,7 @@ namespace Serv.Logic
             int count = list.Count;
             ProtocolBytes protocol = new ProtocolBytes();
             protocol.AddString("GetList");
-            protocol.AddString(count);
+            protocol.AddInt(count);
             protocol.AddInt(count);
             for(int i = 0; i < count; i ++ )
             {
