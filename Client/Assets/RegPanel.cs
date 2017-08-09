@@ -44,10 +44,20 @@ public class RegPanel : PanelBase
         //用户名密码为空
         if (idInput.text == "" || pwInput.text == "")
         {
-            Debug.Log("用户名密码不能为空!");
+            //Debug.Log("用户名密码不能为空!");
+            PanelMgr.instance.OpenPanel<TipPanel>("", "用户名密码不能为空");
             return;
         }
 
+        //两次密码不同
+        if(pwInput.text != repInput.text)
+        {
+            PanelMgr.instance.OpenPanel<TipPanel>("", "两次输入的密码不同");
+            return;
+        }
+
+
+        //连接服务器
         if (NetMgr.srvConn.status != Connection.Status.Connected)
         {
             string host = "127.0.0.1";
@@ -70,15 +80,19 @@ public class RegPanel : PanelBase
         int start = 0;
         string protoName = proto.GetString(start, ref start);
         int ret = proto.GetInt(start, ref start);
+
+        //解析协议
         if (ret == 0)
         {
-            Debug.Log("注册成功!");
+            //Debug.Log("注册成功!");
+            PanelMgr.instance.OpenPanel<TipPanel>("", "注册成功"); 
             PanelMgr.instance.OpenPanel<LoginPanel>("");
             Close();
         }
         else
         {
-            Debug.Log("注册失败!");
+            //Debug.Log("注册失败!");
+            PanelMgr.instance.OpenPanel<TipPanel>("", "注册失败，请更换用户名？");
         }
     }
 }
