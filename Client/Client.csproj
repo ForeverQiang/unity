@@ -95,9 +95,11 @@
   <ItemGroup>
     <Compile Include="Assets\GameMgr.cs" />
     <Compile Include="Assets\LoginPanel.cs" />
+    <Compile Include="Assets\MultiBattle.cs" />
     <Compile Include="Assets\RegPanel.cs" />
     <Compile Include="Assets\RoomListPanel.cs" />
     <Compile Include="Assets\RoomPanel.cs" />
+    <Compile Include="Assets\Tank.cs" />
     <Compile Include="Assets\TipPanel.cs" />
     <Compile Include="Assets\Walk.cs" />
     <Compile Include="Assets\core\Root.cs" />
