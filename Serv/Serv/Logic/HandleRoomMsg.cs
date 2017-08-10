@@ -18,5 +18,6 @@ namespace Serv.Logic
     public partial class HandleRoomMsg
     {
 
+
     }
 }
