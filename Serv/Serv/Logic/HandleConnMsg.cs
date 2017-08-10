@@ -73,6 +73,7 @@ public partial class HandleConnMsg
 			conn.Send (protocolRet);
 			return;
 		}
+
 		//获取玩家数据
 		PlayerData playerData = DataMgr.instance.GetPlayerData (id);
 		if (playerData == null)
@@ -85,6 +86,7 @@ public partial class HandleConnMsg
 		conn.player.data = playerData;
 		//事件触发
 		ServNet.instance.handlePlayerEvent.OnLogin(conn.player);
+
 		//返回
 		protocolRet.AddInt(0);
 		conn.Send (protocolRet);
