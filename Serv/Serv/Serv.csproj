@@ -47,6 +47,7 @@
     <Compile Include="core\ProtocolStr.cs" />
     <Compile Include="core\Sys.cs" />
     <Compile Include="core\ServNet.cs" />
+    <Compile Include="Logic\HandleBattleMsg.cs" />
     <Compile Include="Logic\handleConnMsg.cs" />
     <Compile Include="Logic\handlePlayerEvent.cs" />
     <Compile Include="Logic\handlePlayerMsg.cs" />
