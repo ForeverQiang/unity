@@ -102,15 +102,28 @@
     <Compile Include="Assets\BattleTank.cs" />
     <Compile Include="Assets\Bullet.cs" />
     <Compile Include="Assets\CameraFollow.cs" />
-    <Compile Include="Assets\CoreFrame\PanelBase.cs" />
-    <Compile Include="Assets\CoreFrame\PanelMgr.cs" />
+    <Compile Include="Assets\GameMgr.cs" />
+    <Compile Include="Assets\MultiBattle.cs" />
     <Compile Include="Assets\PanelCode\InfoPanel.cs" />
+    <Compile Include="Assets\PanelCode\LoginPanel.cs" />
     <Compile Include="Assets\PanelCode\OptionPanel.cs" />
+    <Compile Include="Assets\PanelCode\RegPanel.cs" />
+    <Compile Include="Assets\PanelCode\RoomListPanel.cs" />
+    <Compile Include="Assets\PanelCode\RoomPanel.cs" />
+    <Compile Include="Assets\PanelCode\TipPanel.cs" />
     <Compile Include="Assets\PanelCode\TitlePanel.cs" />
     <Compile Include="Assets\PanelCode\WinPanel.cs" />
     <Compile Include="Assets\Path.cs" />
-    <Compile Include="Assets\Root.cs" />
     <Compile Include="Assets\Tank.cs" />
+    <Compile Include="Assets\core\Root.cs" />
+    <Compile Include="Assets\core\net\Connection.cs" />
+    <Compile Include="Assets\core\net\MsgDistribution.cs" />
+    <Compile Include="Assets\core\net\NetMgr.cs" />
+    <Compile Include="Assets\core\net\ProtocolBase.cs" />
+    <Compile Include="Assets\core\net\ProtocolBytes.cs" />
+    <Compile Include="Assets\core\net\ProtocolStr.cs" />
+    <Compile Include="Assets\core\panel\PanelBase.cs" />
+    <Compile Include="Assets\core\panel\PanelMgr.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Standard Assets\Particles\Sources\Shaders\Particle Alpha Blend (Queue +100).shader" />

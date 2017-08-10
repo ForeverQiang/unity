@@ -44,14 +44,16 @@ public class Tank : MonoBehaviour
     public float lastShootTime = 0;
     //开炮的时间间隔
     private float shootInterval = 0.5f;
-
+    //网络同步
+    private float lastSendInfoTime = float.MinValue;
 
     //操控类型
     public enum CtrlType
     {
         none,
         player,
-        computer
+        computer,
+        net,
     }
     public CtrlType ctrlType = CtrlType.player;
 
@@ -85,6 +87,104 @@ public class Tank : MonoBehaviour
     //人工智能
     private AI ai;
 
+    //last 上次的位置信息
+    Vector3 lPos;
+    Vector3 lRot;
+    //forecast 预测的位置信息
+    Vector3 fPos;
+    Vector3 fRot;
+    //时间间隔
+    float delta = 1;
+    //上次接收的时间
+    float lastRecvInfoTime = float.MinValue;
+
+    //位置预测
+    public void NetForecastInfo(Vector3 nPos, Vector3 nRot)
+    {
+        //预测的位置
+        fPos = lPos + (nPos - lPos) * 2;
+        fRot = lRot + (nRot - lRot) * 2;
+        if (Time.time - lastRecvInfoTime > 0.3f)
+        {
+            fPos = nPos;
+            fRot = nRot;
+        }
+        //时间
+        delta = Time.time - lastRecvInfoTime;
+        //更新
+        lPos = nPos;
+        lRot = nRot;
+        lastRecvInfoTime = Time.time;
+    }
+
+    //初始化位置预测数据
+    public void InitNetCtrl()
+    {
+        lPos = transform.position;
+        lRot = transform.eulerAngles;
+        fPos = transform.position;
+        fRot = transform.eulerAngles;
+        Rigidbody r = GetComponent<Rigidbody>();
+        r.constraints = RigidbodyConstraints.FreezeAll;
+    }
+
+    public void NetUpdate()
+    {
+        //当前位置
+        Vector3 pos = transform.position;
+        Vector3 rot = transform.eulerAngles;
+        //更新位置
+        if (delta > 0)
+        {
+            transform.position = Vector3.Lerp(pos, fPos, delta);
+            transform.rotation = Quaternion.Lerp(Quaternion.Euler(rot),
+                                              Quaternion.Euler(fRot), delta);
+        }
+        //炮塔旋转
+        TurretRotation();
+        TurretRoll();
+        //轮子履带马达音效
+        NetWheelsRotation();
+    }
+
+    public void NetTurretTarget(float y, float x)
+    {
+        turretRotTarget = y;
+        turretRollTarget = x;
+    }
+
+    public void NetWheelsRotation()
+    {
+        float z = transform.InverseTransformPoint(fPos).z;
+        //判断坦克是否在移动
+        if (Mathf.Abs(z) < 0.1f || delta <= 0.05f)
+        {
+            motorAudioSource.Pause();
+            return;
+        }
+        //轮子
+        foreach (Transform wheel in wheels)
+        {
+            wheel.localEulerAngles += new Vector3(360 * z / delta, 0, 0);
+        }
+        //履带
+        float offset = -wheels.GetChild(0).localEulerAngles.x / 90f;
+        foreach (Transform track in tracks)
+        {
+            MeshRenderer mr = track.gameObject.GetComponent<MeshRenderer>();
+            if (mr == null) continue;
+            Material mtl = mr.material;
+            mtl.mainTextureOffset = new Vector2(0, offset);
+        }
+        //声音
+        if (!motorAudioSource.isPlaying)
+        {
+            motorAudioSource.loop = true;
+            motorAudioSource.clip = motorClip;
+            motorAudioSource.Play();
+        }
+    }
+
     //显示击杀图标
     public void StartDrawKill()
     {
@@ -115,6 +215,12 @@ public class Tank : MonoBehaviour
         //发射炮弹
         if (Input.GetMouseButton(0))
             Shoot();
+        //网络同步
+        if (Time.time - lastSendInfoTime > 0.2f)
+        {
+            SendUnitInfo();
+            lastSendInfoTime = Time.time;
+        }
     }
 
     //电脑控制
@@ -174,6 +280,12 @@ public class Tank : MonoBehaviour
     //每帧执行一次
     void Update()
     {
+        //网络同步
+        if (ctrlType == CtrlType.net)
+        {
+            NetUpdate();
+            return;
+        }
         //操控
         PlayerCtrl();
         CombuterCtrl();
@@ -326,6 +438,10 @@ public class Tank : MonoBehaviour
         lastShootTime = Time.time;
         shootAudioSource.PlayOneShot(shootClip);
 
+        //发送同步信息
+        if(ctrlType == CtrlType.player)
+            SendShootInfo(bulletObj.transform);
+
     }
 
     //被攻击
@@ -467,5 +583,76 @@ public class Tank : MonoBehaviour
         DrawSight();
         DrawHp();
         DrawKillUI();
+    }
+
+
+
+
+    public void SendUnitInfo()
+    {
+        ProtocolBytes proto = new ProtocolBytes();
+        proto.AddString("UpdateUnitInfo");
+        //位置旋转
+        Vector3 pos = transform.position;
+        Vector3 rot = transform.eulerAngles;
+        proto.AddFloat(pos.x);
+        proto.AddFloat(pos.y);
+        proto.AddFloat(pos.z);
+        proto.AddFloat(rot.x);
+        proto.AddFloat(rot.y);
+        proto.AddFloat(rot.z);
+        //炮塔
+        float angleY = turretRotTarget;
+        proto.AddFloat(angleY);
+        //炮管
+        float angleX = turretRollTarget;
+        proto.AddFloat(angleX);
+        NetMgr.srvConn.Send(proto);
+    }
+
+    public void SendShootInfo(Transform bulletTrans)
+    {
+        ProtocolBytes proto = new ProtocolBytes();
+        proto.AddString("Shooting");
+        //位置旋转
+        Vector3 pos = bulletTrans.position;
+        Vector3 rot = bulletTrans.eulerAngles;
+        proto.AddFloat(pos.x);
+        proto.AddFloat(pos.y);
+        proto.AddFloat(pos.z);
+        proto.AddFloat(rot.x);
+        proto.AddFloat(rot.y);
+        proto.AddFloat(rot.z);
+
+        NetMgr.srvConn.Send(proto);
+
+    }
+
+    public void NetBeAttacked(float att, GameMgr attackTank)
+    {
+        //扣除生命值
+        if (hp <= 0)
+            return;
+        if (hp > 0)
+        {
+            hp -= att;
+        }
+        //坦克被击毁
+        if(hp<= 0)
+        {
+            //改变操作模式
+            ctrlType = CtrlType.none;
+            //播放着火特效
+            GameObject destoryObj = (GameObject)Instantiate(destoryEffect);
+            destoryEffect.transform.SetParent(transform,false);
+            destoryEffect.transform.localPosition = Vector3.zero;
+            //播放击杀提示
+            if(attackTank != null)
+            {
+                Tank tankCmp = attackTank.GetComponent<Tank>();
+                if (tankCmp != null && tankCmp.ctrlType == CtrlType.player)
+                    tankCmp.StartDrawKill();
+            }
+        }
     }
 }
