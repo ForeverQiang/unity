@@ -57,8 +57,18 @@ public partial class HandlePlayerMsg
         protocolRet.AddFloat(z);
         protocolRet.AddInt(score);
         ServNet.instance.Broadcast(protocolRet);
-
-
-
     }
+
+
+    //获取晚间信息
+    public void msgGetAchieve(Player player, ProtocolBase protobase)
+    {
+        ProtocolBytes protocolRet = new ProtocolBytes();
+        protocolRet.AddString("GetAchieve");
+        protocolRet.AddInt(player.data.win);
+        protocolRet.AddInt(player.data.fail);
+        player.Send(protocolRet);
+        Console.WriteLine("MsgGetScore " + player.id + player.data.win);
+    }
+
 }
