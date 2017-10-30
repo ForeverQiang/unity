@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharp直接连接MySQL", "CSharp直接连接MySQL\CSharp直接连接MySQL.csproj", "{92FD13D7-4050-4ABB-835C-68CC51260EBC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NHibernate和mySql交互", "NHibernate和mySql交互\NHibernate和mySql交互.csproj", "{9553F73D-1A16-4715-9147-5D75BFD4FA67}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyGameServer", "MyGameServer\MyGameServer.csproj", "{19242820-8FB2-42C4-86F5-4276EC514A75}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{760B0865-E2E1-4A33-8746-087FE385F767}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{92FD13D7-4050-4ABB-835C-68CC51260EBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92FD13D7-4050-4ABB-835C-68CC51260EBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92FD13D7-4050-4ABB-835C-68CC51260EBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92FD13D7-4050-4ABB-835C-68CC51260EBC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9553F73D-1A16-4715-9147-5D75BFD4FA67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9553F73D-1A16-4715-9147-5D75BFD4FA67}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9553F73D-1A16-4715-9147-5D75BFD4FA67}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9553F73D-1A16-4715-9147-5D75BFD4FA67}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19242820-8FB2-42C4-86F5-4276EC514A75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19242820-8FB2-42C4-86F5-4276EC514A75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19242820-8FB2-42C4-86F5-4276EC514A75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19242820-8FB2-42C4-86F5-4276EC514A75}.Release|Any CPU.Build.0 = Release|Any CPU
+		{760B0865-E2E1-4A33-8746-087FE385F767}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{760B0865-E2E1-4A33-8746-087FE385F767}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{760B0865-E2E1-4A33-8746-087FE385F767}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{760B0865-E2E1-4A33-8746-087FE385F767}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
