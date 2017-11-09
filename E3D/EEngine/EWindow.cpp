@@ -172,7 +172,7 @@ namespace E3D
 	{
 		for (InputItr itr = mInputListeners.begin(); itr != mInputListeners.end(); ++itr)
 		{
-			(*itr)->mouseWhee(delta);
+			(*itr)->mouseWheel(delta);
 		}
 	}
 	void EGameWindow::quiteApplication()

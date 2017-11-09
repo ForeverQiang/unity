@@ -20,7 +20,7 @@ namespace E3D
 		virtual EBool mouseButtonDown(EInt mouseButton) = 0;
 		virtual EBool mouseButtonRelease(EInt mouseButton) = 0;
 		virtual EBool mouseMove(EInt x, EInt y) = 0;
-		virtual EBool mouseWhee(EInt delta) = 0;
+		virtual EBool mouseWheel(EInt delta) = 0;
 
 	private:
 
